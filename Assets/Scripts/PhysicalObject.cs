@@ -24,7 +24,7 @@ public class PhysicalObject : MonoBehaviour
 
 
     [System.Serializable] public class ColliderEvent : UnityEvent<Collider> { };
-    [System.Serializable] public class HandEvent : UnityEvent<Transform> { };
+    [System.Serializable] public class HandEvent : UnityEvent<Vector3> { };
 
     public UnityEvent
         onDestroy,
@@ -32,7 +32,7 @@ public class PhysicalObject : MonoBehaviour
     public ColliderEvent
         onHit;
     public HandEvent
-        onPickup,
+        onPickUp,
         onDrop;
 
     private void OnCollisionEnter(Collision collision)
@@ -53,7 +53,7 @@ public class PhysicalObject : MonoBehaviour
     /// <summary>
     /// Called when picking up this item
     /// </summary>
-    public void OnPickUp(Transform pickedUpByHand)
+    public void OnPickUp(Vector3 pickedUpByHand)
     {
         //internal stuff
 
@@ -62,13 +62,13 @@ public class PhysicalObject : MonoBehaviour
 
 
         //external stuff
-        onPickup.Invoke(pickedUpByHand);
+        onPickUp.Invoke(pickedUpByHand);
     }
 
     /// <summary>
     /// Called every fixedupdate frame when holding this
     /// </summary>
-    public void OnHolding(Transform heldByHand)
+    public void OnHolding(Vector3 heldByHand)
     {
         //internal
 
@@ -78,7 +78,7 @@ public class PhysicalObject : MonoBehaviour
         onHolding.Invoke();
     }
 
-    public void OnDrop(Transform droppedByHand)
+    public void OnDrop(Vector3 droppedByHand)
     {
         //internal stuff
 

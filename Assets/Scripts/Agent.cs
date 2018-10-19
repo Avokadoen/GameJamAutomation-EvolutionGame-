@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Pace         {walking = 1, jogging = 3, running = 5, sprinting = 10}
+public enum Pace         {stop = 0, walking = 1, jogging = 3, running = 5, sprinting = 10}
 public enum Mental_state {awake = -1, sleeping = 4}
 
 
-[RequireComponent(typeof(PhysicalObject), typeof(Rigidbody))]
+[RequireComponent(typeof(PhysicalObject), typeof(Rigidbody), typeof(AudioSource))]
 public class Agent : MonoBehaviour {
 
     public const float FOOD_TO_STAMINA_RATIO = 100;
@@ -14,8 +14,10 @@ public class Agent : MonoBehaviour {
     public const float HUNGER_HEALTH_EFFECT = 0.001f;
     public const float ARRIVED_MOVE_TOW = 0.01f;
     public const int DAY_DURATION = 60;    // how many seconds in one day
+    public const int MAX_SOUND_DISTANCE = 100;
 
     Rigidbody rb;
+    AudioSource audioSource;
 
     PhysicalObject physicalObject;
     PhysicalObject heldObject;
@@ -43,6 +45,7 @@ public class Agent : MonoBehaviour {
     void Start () {
         physicalObject = GetComponent<PhysicalObject>();
         rb = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
 
         // TODO: Agent testing values: remove
         fed             = 1f;
@@ -152,9 +155,15 @@ public class Agent : MonoBehaviour {
             currentMentalState = mental_state.sleeping;
         }
         else if (wakeFullness >= 1 && currentMentalState != mental_state.sleeping ||  // Takes damage*/
+
+        // AUDIO UPDATE
+        audioSource.volume = getPace();
+        audioSource.maxDistance = getPace() * MAX_SOUND_DISTANCE;
+        audioSource.pitch = 0.9f + getPace() * 0.5f;
     }
 
     // Meta functions
+
     public bool LineOfSight(PhysicalObject target)
     {
         RaycastHit hit;

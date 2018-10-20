@@ -80,7 +80,7 @@ public class WorldGenerator : MonoBehaviour {
     {
         GameObject[] spawnList = tileToSpawnOn.GetComponent<SpawnableList>().spawnables;
         int spawnListSize = spawnList.Length;
-        Vector3 newSpawnPos = new Vector3(spawnPos.x + 0.5f, spawnPos.y + 0.04f, spawnPos.z + 0.5f);
+        Vector3 newSpawnPos = new Vector3(spawnPos.x + 0.5f, spawnPos.y + 0.15f, spawnPos.z + 0.5f);
         if (spawnListSize > 0)
         {
             Instantiate<GameObject>(spawnList[rand.Next(spawnListSize)], newSpawnPos, Quaternion.identity);

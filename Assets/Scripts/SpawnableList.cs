@@ -34,10 +34,8 @@ public class SpawnableList : MonoBehaviour {
         if (!Physics.Raycast(rayCastPos, Vector3.up, maxDistance: 0.5f))
         {
             Instantiate(spawnables[rand.Next(spawnables.Length)], spawnPos, Quaternion.identity);
-            Debug.Log("Spawned!");
             return;
         }
-        Debug.Log("Didn't spawn!");
     }
 
     public void SetRandom(int seed)

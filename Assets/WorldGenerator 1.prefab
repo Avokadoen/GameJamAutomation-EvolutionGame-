@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4785308611185132}
   - component: {fileID: 114929419942749388}
   m_Layer: 0
-  m_Name: WorldGenerator
+  m_Name: WorldGenerator 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

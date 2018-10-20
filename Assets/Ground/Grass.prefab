@@ -906,5 +906,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnables:
-  - {fileID: 1077204234403308, guid: 800b26f64e05e96449e64b0e17394324, type: 2}
   - {fileID: 1017086179655774, guid: f5de61cd1ac23ac419554763bdb1b0df, type: 2}
+  - {fileID: 1077204234403308, guid: 800b26f64e05e96449e64b0e17394324, type: 2}
+  canSpawnObjects: 0
+  timeSinceLastSpawn: 0
+  maxSpawnTimer: 200
+  minSpawnTimer: 50

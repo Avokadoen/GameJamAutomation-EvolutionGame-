@@ -131,6 +131,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnables: []
+  canSpawnObjects: 0
+  timeSinceLastSpawn: 0
+  maxSpawnTimer: 200
+  minSpawnTimer: 50
 --- !u!114 &114208301760433606
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -878,6 +882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b675e64a27b7797418c45cc5ae2daaa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  body: {fileID: 0}
   durability: 99999
   density: 0.9
   onDestroy:

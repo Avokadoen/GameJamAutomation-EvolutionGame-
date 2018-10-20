@@ -17,10 +17,12 @@ public class WorldGenerator : MonoBehaviour {
     public GameObject[] defaultSpawnList;
     public GameObject[] animalsToSpawn;
 
+    public Random rand;
+
 
     // Use this for initialization
     void Start () {
-        Random rand = new Random(testSeed.GetHashCode());
+        rand = new Random(testSeed.GetHashCode());
         GenerateGround(rand);
 	}
 	
@@ -50,8 +52,9 @@ public class WorldGenerator : MonoBehaviour {
                         Vector3 spawnPosition = new Vector3(biomeX * biomeSize + x, 0, biomeY * biomeSize + y);
                         if(spawnRoll % biomeOddsFavour != 0)
                         {
-                            Instantiate<GameObject>(groundTiles[biomeType], spawnPosition, Quaternion.identity);
-                            if(rand.Next(spawnObjectsOdds) % spawnObjectsOdds == 0)
+                            GameObject newObject = Instantiate(groundTiles[biomeType], spawnPosition, Quaternion.identity);
+                            newObject.GetComponent<SpawnableList>().SetRandom(rand.Next());
+                            if (rand.Next(spawnObjectsOdds) % spawnObjectsOdds == 0)
                             {
                                 SpawnObjectsOnTile(rand, groundTiles[biomeType], spawnPosition);
                             }
@@ -59,7 +62,8 @@ public class WorldGenerator : MonoBehaviour {
                         else // This could also spawn the biome type ground tile, could make this different
                         {
                             int objectToSpawn = rand.Next(amountOfGroundTiles);
-                            Instantiate<GameObject>(groundTiles[objectToSpawn], spawnPosition, Quaternion.identity);
+                            GameObject newObject = Instantiate(groundTiles[objectToSpawn], spawnPosition, Quaternion.identity);
+                            newObject.GetComponent<SpawnableList>().SetRandom(rand.Next());
                             if (rand.Next(spawnObjectsOdds) % spawnObjectsOdds == 0)
                             {
                                 SpawnObjectsOnTile(rand, groundTiles[objectToSpawn], spawnPosition);

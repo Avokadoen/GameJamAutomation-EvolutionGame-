@@ -11,9 +11,10 @@ public class WorldGenerator : MonoBehaviour {
     [Tooltip("Size of each biome in tiles x tiles size")]
     [SerializeField] private int biomeSize;
     [SerializeField] private int biomeOddsFavour;
+    [SerializeField] private int spawnObjectsOdds;
 
     public GameObject[] groundTiles;
-    public GameObject[] objectsToSpawn;
+    public GameObject[] defaultSpawnList;
     public GameObject[] animalsToSpawn;
 
 
@@ -49,16 +50,40 @@ public class WorldGenerator : MonoBehaviour {
                         Vector3 spawnPosition = new Vector3(biomeX * biomeSize + x, 0, biomeY * biomeSize + y);
                         if(spawnRoll % biomeOddsFavour != 0)
                         {
-                            GameObject.Instantiate<GameObject>(groundTiles[biomeType], spawnPosition, Quaternion.identity);
+                            Instantiate<GameObject>(groundTiles[biomeType], spawnPosition, Quaternion.identity);
+                            if(rand.Next(spawnObjectsOdds) % spawnObjectsOdds == 0)
+                            {
+                                SpawnObjectsOnTile(rand, groundTiles[biomeType], spawnPosition);
+                            }
                         }
                         else // This could also spawn the biome type ground tile, could make this different
                         {
-                            GameObject.Instantiate<GameObject>(groundTiles[rand.Next(amountOfGroundTiles)], spawnPosition, Quaternion.identity);
+                            int objectToSpawn = rand.Next(amountOfGroundTiles);
+                            Instantiate<GameObject>(groundTiles[objectToSpawn], spawnPosition, Quaternion.identity);
+                            if (rand.Next(spawnObjectsOdds) % spawnObjectsOdds == 0)
+                            {
+                                SpawnObjectsOnTile(rand, groundTiles[objectToSpawn], spawnPosition);
+                            }
                         }
                     }
 
                 }
             }
+        }
+    }
+
+    private void SpawnObjectsOnTile(Random rand, GameObject tileToSpawnOn, Vector3 spawnPos)
+    {
+        GameObject[] spawnList = tileToSpawnOn.GetComponent<SpawnableList>().spawnables;
+        int spawnListSize = spawnList.Length;
+        Vector3 newSpawnPos = new Vector3(spawnPos.x + 0.5f, spawnPos.y + 0.04f, spawnPos.z + 0.5f);
+        if (spawnListSize > 0)
+        {
+            Instantiate<GameObject>(spawnList[rand.Next(spawnListSize)], newSpawnPos, Quaternion.identity);
+        }
+        else
+        {
+            Instantiate<GameObject>(defaultSpawnList[rand.Next(defaultSpawnList.Length)], newSpawnPos, Quaternion.identity);
         }
     }
 }

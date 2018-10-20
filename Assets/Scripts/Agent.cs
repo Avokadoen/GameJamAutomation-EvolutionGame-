@@ -40,6 +40,7 @@ public class Agent : MonoBehaviour {
 
     public LayerMask plantsMask;
     public LayerMask meatMask;
+    public LayerMask agentMask;
 
 
     public AgentState state;
@@ -69,7 +70,7 @@ public class Agent : MonoBehaviour {
         //tempreture      = 38f;
         state.perception      = 10f;
         state.currentMentalState = Mental_state.awake;
-        state.eaterType = Eater_type.omnivore;
+        state.eaterType = Eater_type.carnivore;
         state.maxDurability = physicalObject.durability;
         state.currentPace = Pace.running;
         moveTowardsStatus = 404;
@@ -78,21 +79,27 @@ public class Agent : MonoBehaviour {
     // Update is called once per frame
     void FixedUpdate () {
         UpdateStates();
+        HoldObject();
     }
 
 
     // Actions
+    public int TryToPickUpTarget()
+    {
+        return TryToPickUp(target.GetComponent<PhysicalObject>());
+    }
+
     public int TryToPickUp(PhysicalObject target)
     {
         RaycastHit hit;
-        if (!Physics.Raycast(transform.position, transform.forward, out hit, 1f))
+        if (!Physics.Raycast(transform.position, (target.transform.position - transform.position).normalized, out hit, 2f * transform.localScale.x))
             return 404;
 
-        if (hit.transform.gameObject == target.gameObject)
+        if (hit.transform.gameObject.name != target.gameObject.name)
             return 401;
 
         heldObject = target;
-        heldObject.OnPickUp(transform.position + transform.forward);
+        heldObject.OnPickUp(physicalObject);
         return 200;
     }
 
@@ -106,10 +113,11 @@ public class Agent : MonoBehaviour {
         Vector3 lookAt = moveTowardsTarget;
         lookAt.y = transform.position.y;
         transform.LookAt(lookAt);
-        if (Physics.Raycast(transform.position, transform.forward, 1f)) { return 202; } // perception * (1 - sleepyness))
+        if (Physics.Raycast(transform.position, (target.transform.position - transform.position).normalized, 1f * transform.localScale.x))
+            return 202;
 
-        else if (Mathf.Abs(moveTowardsTarget.x - transform.position.x) < ARRIVED_MOVE_TOW &&
-                Mathf.Abs(moveTowardsTarget.z - transform.position.z) < ARRIVED_MOVE_TOW)
+        else if (Mathf.Abs(moveTowardsTarget.x - transform.position.x) < ARRIVED_MOVE_TOW * transform.localScale.x &&
+                Mathf.Abs(moveTowardsTarget.z - transform.position.z) < ARRIVED_MOVE_TOW * transform.localScale.z)
             return 200;
 
         float staminaToBeUsed = state.getPace() * Time.deltaTime;
@@ -134,7 +142,9 @@ public class Agent : MonoBehaviour {
         if (state.currentMentalState == Mental_state.awake)
         {
             state.currentMentalState = Mental_state.sleeping;
+            rb.isKinematic = true;
             transform.Rotate(90, 0, 0);
+            gameObject.isStatic = true;
         }
     }
 
@@ -143,7 +153,9 @@ public class Agent : MonoBehaviour {
         if (state.currentMentalState != Mental_state.awake)
         {
             state.currentMentalState = Mental_state.awake;
+            rb.isKinematic = false;
             transform.Rotate(-90, 0, 0);
+            gameObject.isStatic = false;
         }
     }
 
@@ -192,9 +204,40 @@ public class Agent : MonoBehaviour {
         audioSource.volume = state.getPace();
         audioSource.maxDistance = state.getPace() * MAX_SOUND_DISTANCE;
         audioSource.pitch = 0.9f + state.getPace() * 0.5f;
+        audioSource.loop = (rb.velocity.magnitude > 0);
 
         // AWARENESS UPDATE
-        
+
+    }
+
+    private void HoldObject()
+    {
+        if(heldObject != null)
+        {
+            heldObject.body.MovePosition(transform.position + transform.forward * 2f * transform.localScale.x);
+        }
+    }
+
+    public void EatHeldObject()
+    {
+        if (heldObject == null)
+            return;
+
+        Food heldFood = heldObject.GetComponent<Food>();
+        if (heldFood == null)
+            return;
+
+        if (heldFood.thisFoodType == food_type.meat && state.eaterType == Eater_type.herbivore)
+            return;
+
+        if (heldFood.thisFoodType == food_type.plant && state.eaterType == Eater_type.carnivore)
+            return;
+
+        state.fed += (float)heldFood.thisFoodType * 0.1f; // TODO: scale with foodtype and transform scale or other quantity
+
+        Destroy(heldObject.gameObject);
+        heldObject = null;
+        target = null;
     }
 
     // Meta functions
@@ -211,13 +254,48 @@ public class Agent : MonoBehaviour {
         transform.LookAt(lookAt);
         RaycastHit hit;
 
-        if (!Physics.Raycast(transform.position, transform.forward, out hit, state.perception * state.wakeFullness * 5))
+        Debug.DrawRay(transform.position, (target.transform.position - transform.position).normalized, Color.red);
+        if (!Physics.Raycast(transform.position, (target.transform.position - transform.position).normalized, out hit, (state.perception * state.wakeFullness * 5)))
             return false;
 
-        if (hit.transform.gameObject == target.gameObject)
-            return true;
+        if (hit.transform.gameObject.name != target.gameObject.name)
+            return false;
 
-        return false;
+        return true;
+    }
+
+    public int FindBestPreyNearby()
+    {
+        float bestSoFar = 99999f;
+        Agent easiestPrey = null;
+        List<Agent> preyList = FindAllPreyNearby();
+        foreach (Agent prey in preyList)
+        {
+            float threat = TargetThreat(prey);
+            Debug.Log(threat);
+            if (threat < bestSoFar)
+            {
+                bestSoFar = threat;
+                easiestPrey = prey;
+            }
+        }
+        if (easiestPrey == null) return 404;
+        target = easiestPrey.gameObject;
+        return 200;
+    }
+
+    public List<Agent> FindAllPreyNearby()
+    {
+        float surroundRange = state.perception * state.wakeFullness * 2.5f * transform.localScale.x;
+        Vector3 surroundingsBounds = new Vector3(surroundRange, surroundRange * 0.5f, surroundRange);
+        Collider[] surroundColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, agentMask);
+
+        List<Agent> agentList = new List<Agent>();
+        foreach (Collider collider in surroundColliders)
+        {
+            agentList.Add(collider.gameObject.GetComponent<Agent>());
+        }
+        return agentList;
     }
 
     public int FindBestPlantNearby()
@@ -227,9 +305,10 @@ public class Agent : MonoBehaviour {
         List<Food> foodNearby = FindAllPlantsNearby();
         foreach(Food food in foodNearby)
         {
-            float distanceMagnitude = (food.transform.position - transform.position).magnitude;
+            float distanceMagnitude = Mathf.Abs((food.transform.position - transform.position).magnitude);
             if (distanceMagnitude < bestSoFar)
             {
+                bestSoFar = distanceMagnitude;
                 bestFood = food;
             }
         }
@@ -240,13 +319,10 @@ public class Agent : MonoBehaviour {
 
     public List<Food> FindAllPlantsNearby()
     {
-        float surroundRange = state.perception * state.wakeFullness * 2.5f;
+        float surroundRange = state.perception * state.wakeFullness * 2.5f * transform.localScale.x;
         Vector3 surroundingsBounds = new Vector3(surroundRange, surroundRange * 0.5f, surroundRange);
         Collider[] surroundColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
 
-        //float visionRange = state.perception * state.wakeFullness;
-        //Vector3 visionVector = new Vector3(0, 0, visionRange);
-        //Collider[] hitColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
         List<Food> foodList = new List<Food>();
         foreach(Collider collider in surroundColliders)
         {

@@ -28,7 +28,7 @@ GameObject:
   - component: {fileID: 82341817524827000}
   - component: {fileID: 95145044346636708}
   - component: {fileID: 114082044042712854}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: AnimalPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,8 +42,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1046132178205538}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.5078735, y: 1.18, z: 14}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 8.01, y: 1.18, z: 14}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -114,7 +114,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 96dc4809e40feda4aae7eb8aa5aa5f4d, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 2561b9bda38574341ae1e6fce3dda8d3, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0
   m_Pitch: 0.9
@@ -243,6 +243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b675e64a27b7797418c45cc5ae2daaa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  body: {fileID: 0}
   durability: 53.397614
   density: 0.5
   onDestroy:
@@ -286,12 +287,15 @@ MonoBehaviour:
     m_Bits: 512
   meatMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
+  agentMask:
+    serializedVersion: 2
+    m_Bits: 2048
   rb: {fileID: 54619324523114612}
   audioSource: {fileID: 82341817524827000}
   physicalObject: {fileID: 114486372602238970}
   heldObject: {fileID: 0}
-  moveTowardsTargetTest: {fileID: 0}
+  target: {fileID: 0}
 --- !u!136 &136113838386211268
 CapsuleCollider:
   m_ObjectHideFlags: 1

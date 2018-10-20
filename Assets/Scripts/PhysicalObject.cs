@@ -10,7 +10,7 @@ public class PhysicalObject : MonoBehaviour
 {
     const float DAMAGE_TRESHOLD = 7.5f;
 
-    Rigidbody body;
+    public Rigidbody body;
     Collider objCollider;
 
     public float durability; //How much this object can take before being broken, -1 is unbreakable;
@@ -24,7 +24,7 @@ public class PhysicalObject : MonoBehaviour
 
 
     [System.Serializable] public class ColliderEvent : UnityEvent<Collider> { };
-    [System.Serializable] public class HandEvent : UnityEvent<Vector3> { };
+    [System.Serializable] public class HandEvent : UnityEvent<PhysicalObject> { };
 
     public UnityEvent
         onDestroy,
@@ -34,6 +34,11 @@ public class PhysicalObject : MonoBehaviour
     public HandEvent
         onPickUp,
         onDrop;
+
+    private void Start()
+    {
+        body = GetComponent<Rigidbody>();
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -53,7 +58,7 @@ public class PhysicalObject : MonoBehaviour
     /// <summary>
     /// Called when picking up this item
     /// </summary>
-    public void OnPickUp(Vector3 pickedUpByHand)
+    public void OnPickUp(PhysicalObject pickedUpByHand)
     {
         //internal stuff
 
@@ -68,7 +73,7 @@ public class PhysicalObject : MonoBehaviour
     /// <summary>
     /// Called every fixedupdate frame when holding this
     /// </summary>
-    public void OnHolding(Vector3 heldByHand)
+    public void OnHolding(PhysicalObject heldByHand)
     {
         //internal
 
@@ -78,7 +83,7 @@ public class PhysicalObject : MonoBehaviour
         onHolding.Invoke();
     }
 
-    public void OnDrop(Vector3 droppedByHand)
+    public void OnDrop(PhysicalObject droppedByHand)
     {
         //internal stuff
 

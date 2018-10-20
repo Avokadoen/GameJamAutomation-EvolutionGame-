@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b675e64a27b7797418c45cc5ae2daaa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  body: {fileID: 0}
   durability: 99999
   density: 0.4
   onDestroy:
@@ -906,4 +907,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnables:
   - {fileID: 1077204234403308, guid: 800b26f64e05e96449e64b0e17394324, type: 2}
-  - {fileID: 1928335987547618, guid: a862a59af62d5464389a5d65581d99fa, type: 2}
+  - {fileID: 1017086179655774, guid: f5de61cd1ac23ac419554763bdb1b0df, type: 2}

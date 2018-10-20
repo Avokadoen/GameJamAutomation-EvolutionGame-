@@ -16,22 +16,58 @@ public class AgentBrainSensor : StateMachineBehaviour {
         }
         if (stateInfo.IsName("findPlant"))
         {
+            animator.SetInteger("playerStatus", 0);
             agentStatus = agentScript.FindBestPlantNearby();
             moveTowardsStatus = 404;
-            animator.SetInteger("playerStatus", agentStatus);
+            if(agentStatus > 299)
+                animator.SetInteger("playerStatus", agentStatus);
         }
+        if (stateInfo.IsName("findPrey"))
+        {
+            Debug.Log("find prey start");
+            agentStatus = agentScript.FindBestPreyNearby();
+            moveTowardsStatus = 404;
+            if (agentStatus > 299)
+                animator.SetInteger("playerStatus", agentStatus);
+        }
+        if (stateInfo.IsName("eat"))
+        {
+            agentScript.TryToPickUpTarget();
+            agentScript.EatHeldObject();
+            
+            agentStatus = moveTowardsStatus = 0;
+            animator.SetInteger("playerStatus", agentStatus);
+
+        }
+        
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
     override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
         Agent agentScript = animator.GetComponent<Agent>();
-        if (stateInfo.IsName("findPlant") && agentStatus == 200)
+        if (stateInfo.IsName("findPlant") && agentStatus >= 200 && agentStatus <= 299)
         {
             if (agentScript.LineOfSightToTarget() && moveTowardsStatus > 299)
             {
                 moveTowardsStatus = agentScript.MoveTowardsTarget();
-                if(moveTowardsStatus == 200)
+                Debug.Log("moving");
+                if(moveTowardsStatus >= 200 && moveTowardsStatus <= 299)
                 {
+                    animator.SetInteger("playerStatus", agentStatus);
+                }
+            }
+        }
+
+        if (stateInfo.IsName("findPrey") && agentStatus >= 200 && agentStatus <= 299)
+        {
+            Debug.Log("find prey");
+            if (agentScript.LineOfSightToTarget() && moveTowardsStatus > 299)
+            {
+                Debug.Log("prey found");
+                moveTowardsStatus = agentScript.MoveTowardsTarget();
+                if (moveTowardsStatus >= 200 && moveTowardsStatus <= 299)
+                {
+                    Debug.Log("at prey");
                     animator.SetInteger("playerStatus", agentStatus);
                 }
             }

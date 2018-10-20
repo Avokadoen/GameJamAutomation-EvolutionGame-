@@ -6,6 +6,7 @@ public class AgentBrainSensor : StateMachineBehaviour {
 
     private int agentStatus;
     private int moveTowardsStatus;
+    private float threat;
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
@@ -25,7 +26,9 @@ public class AgentBrainSensor : StateMachineBehaviour {
         if (stateInfo.IsName("findPrey"))
         {
             Debug.Log("find prey start");
-            agentStatus = agentScript.FindBestPreyNearby();
+            float threat = agentScript.FindBestPreyNearby();
+            animator.SetFloat("threat", threat);
+            agentStatus = ((threat < 99999) ? 200 : 404);
             moveTowardsStatus = 404;
             if (agentStatus > 299)
                 animator.SetInteger("playerStatus", agentStatus);
@@ -60,6 +63,8 @@ public class AgentBrainSensor : StateMachineBehaviour {
 
         if (stateInfo.IsName("findPrey") && agentStatus >= 200 && agentStatus <= 299)
         {
+            float threat = agentScript.FindBestPreyNearby();
+            animator.SetFloat("threat", threat);
             Debug.Log("find prey");
             if (agentScript.LineOfSightToTarget() && moveTowardsStatus > 299)
             {

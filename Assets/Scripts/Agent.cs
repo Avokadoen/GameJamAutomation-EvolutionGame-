@@ -62,7 +62,7 @@ public class Agent : MonoBehaviour {
 
         // TODO: Agent testing values: remove
         state.fed = 1f;
-        state.metabolism      = 0.8f;
+        state.metabolism      = 0.4f;
         state.wakeFullness    = 1f;
         state.maxStamina      = 2f;
         state.stamina         = 1f;
@@ -70,7 +70,7 @@ public class Agent : MonoBehaviour {
         //tempreture      = 38f;
         state.perception      = 10f;
         state.currentMentalState = Mental_state.awake;
-        state.eaterType = Eater_type.carnivore;
+        state.eaterType = Eater_type.omnivore;
         state.maxDurability = physicalObject.durability;
         state.currentPace = Pace.running;
         moveTowardsStatus = 404;
@@ -161,6 +161,8 @@ public class Agent : MonoBehaviour {
 
     private void UpdateStates()
     {
+        rb.angularVelocity = new Vector3(0, 0, 0);
+
         // FED UPDATE
         if (state.fed > 0)
         {
@@ -264,7 +266,7 @@ public class Agent : MonoBehaviour {
         return true;
     }
 
-    public int FindBestPreyNearby()
+    public float FindBestPreyNearby()
     {
         float bestSoFar = 99999f;
         Agent easiestPrey = null;
@@ -279,9 +281,9 @@ public class Agent : MonoBehaviour {
                 easiestPrey = prey;
             }
         }
-        if (easiestPrey == null) return 404;
+        if (easiestPrey == null) return bestSoFar;
         target = easiestPrey.gameObject;
-        return 200;
+        return bestSoFar;
     }
 
     public List<Agent> FindAllPreyNearby()

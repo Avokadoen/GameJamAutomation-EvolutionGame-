@@ -27,6 +27,7 @@ GameObject:
   - component: {fileID: 114299363449685490}
   - component: {fileID: 54807770708937292}
   - component: {fileID: 114194785759723362}
+  - component: {fileID: 114888963995383848}
   m_Layer: 0
   m_Name: Mud
   m_TagString: Untagged
@@ -179,6 +180,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _entityType: 0
+--- !u!114 &114888963995383848
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1665885571170610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481f703fa75cf8848bd01c01ad5d374c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnables: []
 --- !u!114 &114974793586983694
 MonoBehaviour:
   m_ObjectHideFlags: 1

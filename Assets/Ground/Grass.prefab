@@ -27,6 +27,7 @@ GameObject:
   - component: {fileID: 114515817399774088}
   - component: {fileID: 54384291864733186}
   - component: {fileID: 114407237256081126}
+  - component: {fileID: 114718075525395886}
   m_Layer: 0
   m_Name: Grass
   m_TagString: Untagged
@@ -892,3 +893,17 @@ MonoBehaviour:
   m_selectedFaces: 
   m_SelectedEdges: []
   m_selectedTriangles: 
+--- !u!114 &114718075525395886
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1355176478806508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481f703fa75cf8848bd01c01ad5d374c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnables:
+  - {fileID: 1077204234403308, guid: 800b26f64e05e96449e64b0e17394324, type: 2}
+  - {fileID: 1928335987547618, guid: a862a59af62d5464389a5d65581d99fa, type: 2}

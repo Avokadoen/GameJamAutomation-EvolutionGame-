@@ -4,20 +4,38 @@ using UnityEngine;
 
 public class AgentBrainSensor : StateMachineBehaviour {
 
+    private int agentStatus;
+    private int moveTowardsStatus;
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         Agent agentScript = animator.GetComponent<Agent>();
         if (stateInfo.IsName("Sleepy"))
         {
-            Debug.Log("wat1");
             agentScript.Sleep();
+        }
+        if (stateInfo.IsName("findPlant"))
+        {
+            agentStatus = agentScript.FindBestPlantNearby();
+            moveTowardsStatus = 404;
+            animator.SetInteger("playerStatus", agentStatus);
         }
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
     override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
-       
+        Agent agentScript = animator.GetComponent<Agent>();
+        if (stateInfo.IsName("findPlant") && agentStatus == 200)
+        {
+            if (agentScript.LineOfSightToTarget() && moveTowardsStatus > 299)
+            {
+                moveTowardsStatus = agentScript.MoveTowardsTarget();
+                if(moveTowardsStatus == 200)
+                {
+                    animator.SetInteger("playerStatus", agentStatus);
+                }
+            }
+        }
     }
 
     //OnStateExit is called when a transition ends and the state machine finishes evaluating this state
@@ -26,18 +44,7 @@ public class AgentBrainSensor : StateMachineBehaviour {
         Agent agentScript = animator.GetComponent<Agent>();
         if (stateInfo.IsName("Sleepy"))
         {
-            Debug.Log("wat2");
             agentScript.WakeUp();
         }
     }
-
-    // OnStateMove is called right after Animator.OnAnimatorMove(). Code that processes and affects root motion should be implemented here
-    //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
-    //
-    //}
-
-    // OnStateIK is called right after Animator.OnAnimatorIK(). Code that sets up animation IK (inverse kinematics) should be implemented here.
-    //override public void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
-    //
-    //}
 }

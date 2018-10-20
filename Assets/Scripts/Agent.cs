@@ -50,7 +50,7 @@ public class Agent : MonoBehaviour {
     public PhysicalObject heldObject;
 
     // TODO: move to function stack
-    public GameObject moveTowardsTargetTest;
+    public GameObject target;
     private int moveTowardsStatus;
 
     // Use this for initialization
@@ -61,7 +61,7 @@ public class Agent : MonoBehaviour {
 
         // TODO: Agent testing values: remove
         state.fed = 1f;
-        state.metabolism      = 0.2f;
+        state.metabolism      = 0.8f;
         state.wakeFullness    = 1f;
         state.maxStamina      = 2f;
         state.stamina         = 1f;
@@ -71,15 +71,14 @@ public class Agent : MonoBehaviour {
         state.currentMentalState = Mental_state.awake;
         state.eaterType = Eater_type.omnivore;
         state.maxDurability = physicalObject.durability;
+        state.currentPace = Pace.running;
         moveTowardsStatus = 404;
     }
 
     // Update is called once per frame
     void FixedUpdate () {
         UpdateStates();
-		// assertState()
-        // takeAction()
-	}
+    }
 
 
     // Actions
@@ -97,7 +96,12 @@ public class Agent : MonoBehaviour {
         return 200;
     }
 
-    private int MoveTowards(Vector3 moveTowardsTarget)
+    public int MoveTowardsTarget()
+    {
+        return MoveTowards(target.transform.position);
+    }
+
+    public int MoveTowards(Vector3 moveTowardsTarget)
     {
         Vector3 lookAt = moveTowardsTarget;
         lookAt.y = transform.position.y;
@@ -127,7 +131,6 @@ public class Agent : MonoBehaviour {
 
     public void Sleep()
     {
-        Debug.Log("kek1");
         if (state.currentMentalState == Mental_state.awake)
         {
             state.currentMentalState = Mental_state.sleeping;
@@ -137,7 +140,6 @@ public class Agent : MonoBehaviour {
 
     public void WakeUp()
     {
-        Debug.Log("kek2");
         if (state.currentMentalState != Mental_state.awake)
         {
             state.currentMentalState = Mental_state.awake;
@@ -197,10 +199,19 @@ public class Agent : MonoBehaviour {
 
     // Meta functions
 
+    public bool LineOfSightToTarget()
+    {
+        return LineOfSight(target.GetComponent<PhysicalObject>());
+    }
+
     public bool LineOfSight(PhysicalObject target)
     {
+        Vector3 lookAt = target.transform.position;
+        lookAt.y = transform.position.y;
+        transform.LookAt(lookAt);
         RaycastHit hit;
-        if (!Physics.Raycast(transform.position, transform.forward, out hit, state.perception * state.wakeFullness))
+
+        if (!Physics.Raycast(transform.position, transform.forward, out hit, state.perception * state.wakeFullness * 5))
             return false;
 
         if (hit.transform.gameObject == target.gameObject)
@@ -209,17 +220,35 @@ public class Agent : MonoBehaviour {
         return false;
     }
 
+    public int FindBestPlantNearby()
+    {
+        float bestSoFar = 999999;
+        Food bestFood = null;
+        List<Food> foodNearby = FindAllPlantsNearby();
+        foreach(Food food in foodNearby)
+        {
+            float distanceMagnitude = (food.transform.position - transform.position).magnitude;
+            if (distanceMagnitude < bestSoFar)
+            {
+                bestFood = food;
+            }
+        }
+        if (bestFood == null) return 404;
+        target = bestFood.gameObject;
+        return 200;
+    }
+
     public List<Food> FindAllPlantsNearby()
     {
-        float surroundRange = state.perception * state.wakeFullness * 0.5f;
+        float surroundRange = state.perception * state.wakeFullness * 2.5f;
         Vector3 surroundingsBounds = new Vector3(surroundRange, surroundRange * 0.5f, surroundRange);
         Collider[] surroundColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
 
         //float visionRange = state.perception * state.wakeFullness;
         //Vector3 visionVector = new Vector3(0, 0, visionRange);
-        Collider[] hitColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
+        //Collider[] hitColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
         List<Food> foodList = new List<Food>();
-        foreach(Collider collider in hitColliders)
+        foreach(Collider collider in surroundColliders)
         {
             foodList.Add(collider.gameObject.GetComponent<Food>());
         }

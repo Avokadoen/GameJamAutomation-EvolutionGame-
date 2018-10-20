@@ -14,7 +14,7 @@ public class PhysicalObject : MonoBehaviour
     Collider objCollider;
 
     public float durability; //How much this object can take before being broken, -1 is unbreakable;
-    [SerializeField] private float density; //How dense an object is determines how much damage it applies to other objects
+    public float density; //How dense an object is determines how much damage it applies to other objects
 
     private Vector3 velocity;
     private Vector3 torque;

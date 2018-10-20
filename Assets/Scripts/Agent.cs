@@ -4,7 +4,29 @@ using UnityEngine;
 
 public enum Pace         {stop = 0, walking = 1, jogging = 3, running = 5, sprinting = 10}
 public enum Mental_state {awake = -1, sleeping = 4}
+public enum Eater_type { carnivore, omnivore, herbivore }
 
+public struct AgentState
+{
+
+    public float fed;
+    public float metabolism;
+    public float wakeFullness;
+    public float maxMoveSpeed;
+    public float maxStamina;
+    public float stamina;
+    public float perception;
+    public float maxDurability;
+    public Pace currentPace;
+    public Mental_state currentMentalState;
+    public Eater_type eaterType;
+
+    public bool IsMovingFast()
+    {
+        return (currentPace == Pace.sprinting || currentPace == Pace.running);
+    }
+    public float getPace() { return (float)currentPace / 10f; }
+}
 
 [RequireComponent(typeof(PhysicalObject), typeof(Rigidbody), typeof(AudioSource))]
 public class Agent : MonoBehaviour {
@@ -13,33 +35,23 @@ public class Agent : MonoBehaviour {
     public const float FED_ATTRITION = 0.015f;
     public const float HUNGER_HEALTH_EFFECT = 0.001f;
     public const float ARRIVED_MOVE_TOW = 0.01f;
-    public const int DAY_DURATION = 60;    // how many seconds in one day
+    public const int DAY_DURATION = 10;    // how many seconds in one day
     public const int MAX_SOUND_DISTANCE = 100;
 
-    Rigidbody rb;
-    AudioSource audioSource;
+    public LayerMask plantsMask;
+    public LayerMask meatMask;
 
-    PhysicalObject physicalObject;
-    PhysicalObject heldObject;
 
-    public float fed;
-    public float metabolism;
-    public float wakeFullness;
-    //public float tempreture;
-    public float maxMoveSpeed;
-    public float maxStamina;
-    public float stamina;
-    public float perception;
-    public float maxDurability;
-    public Pace currentPace;
-    public Mental_state currentMentalState;
+    public AgentState state;
+    public Rigidbody rb;
+    public AudioSource audioSource;
+
+    public PhysicalObject physicalObject;
+    public PhysicalObject heldObject;
 
     // TODO: move to function stack
-    GameObject moveTowardsTargetTest;
+    public GameObject moveTowardsTargetTest;
     private int moveTowardsStatus;
-
-
-    private float getPace() { return (float)currentPace / 10f; }
 
     // Use this for initialization
     void Start () {
@@ -48,17 +60,18 @@ public class Agent : MonoBehaviour {
         audioSource = GetComponent<AudioSource>();
 
         // TODO: Agent testing values: remove
-        fed             = 1f;
-        metabolism      = 0.1f;
-        wakeFullness    = 1f;
-        maxStamina      = 2f;
-        stamina         = 1f;
-        maxMoveSpeed    = 5f;
+        state.fed = 1f;
+        state.metabolism      = 0.2f;
+        state.wakeFullness    = 1f;
+        state.maxStamina      = 2f;
+        state.stamina         = 1f;
+        state.maxMoveSpeed    = 5f;
         //tempreture      = 38f;
-        perception      = 10f;
+        state.perception      = 10f;
+        state.currentMentalState = Mental_state.awake;
+        state.eaterType = Eater_type.omnivore;
+        state.maxDurability = physicalObject.durability;
         moveTowardsStatus = 404;
-        currentMentalState = Mental_state.awake;
-        maxDurability = physicalObject.durability;
     }
 
     // Update is called once per frame
@@ -95,71 +108,91 @@ public class Agent : MonoBehaviour {
                 Mathf.Abs(moveTowardsTarget.z - transform.position.z) < ARRIVED_MOVE_TOW)
             return 200;
 
-        float staminaToBeUsed = getPace() * Time.deltaTime;
-        if (IsMovingFast() && stamina < staminaToBeUsed)
+        float staminaToBeUsed = state.getPace() * Time.deltaTime;
+        if (state.IsMovingFast() && state.stamina < staminaToBeUsed)
         {
-            currentPace = Pace.jogging;
+            state.currentPace = Pace.jogging;
         }
 
 
-        rb.velocity = maxMoveSpeed * getPace() * transform.forward;
+        rb.velocity = state.maxMoveSpeed * state.getPace() * transform.forward;
         
-        if(IsMovingFast())
+        if(state.IsMovingFast())
         {
-            stamina -= staminaToBeUsed;
+            state.stamina -= staminaToBeUsed;
         }
 
         return 404;
     }
 
+    public void Sleep()
+    {
+        Debug.Log("kek1");
+        if (state.currentMentalState == Mental_state.awake)
+        {
+            state.currentMentalState = Mental_state.sleeping;
+            transform.Rotate(90, 0, 0);
+        }
+    }
+
+    public void WakeUp()
+    {
+        Debug.Log("kek2");
+        if (state.currentMentalState != Mental_state.awake)
+        {
+            state.currentMentalState = Mental_state.awake;
+            transform.Rotate(-90, 0, 0);
+        }
+    }
+
     private void UpdateStates()
     {
         // FED UPDATE
-        if (fed > 0)
+        if (state.fed > 0)
         {
-            fed -= metabolism * FED_ATTRITION * Time.fixedDeltaTime;
+            state.fed -= state.metabolism * FED_ATTRITION * Time.fixedDeltaTime;
         }
 
         // STAMINA UPDATE
-        if (stamina < maxStamina && fed > 0 && !IsMovingFast())
+        if (state.stamina < state.maxStamina && state.fed > 0 && !state.IsMovingFast())
         {
-            float foodToEnergy = metabolism * (1 - getPace()) * Time.fixedDeltaTime;
+            float foodToEnergy = state.metabolism * (1 - state.getPace()) * Time.fixedDeltaTime;
 
-            if (foodToEnergy / FOOD_TO_STAMINA_RATIO > fed)
+            if (foodToEnergy / FOOD_TO_STAMINA_RATIO > state.fed)
             {
-                foodToEnergy = fed * FOOD_TO_STAMINA_RATIO;
-                fed = 0;
+                foodToEnergy = state.fed * FOOD_TO_STAMINA_RATIO;
+                state.fed = 0;
             }
-            else fed -= foodToEnergy / FOOD_TO_STAMINA_RATIO;
-            stamina += foodToEnergy;
+            else state.fed -= foodToEnergy / FOOD_TO_STAMINA_RATIO;
+            state.stamina += foodToEnergy;
         }
         // HEALTH UPDATE
         // damage
-        if (fed <= 0)
+        if (state.fed <= 0)
         {
-            physicalObject.durability -= maxDurability * HUNGER_HEALTH_EFFECT * Time.fixedDeltaTime;
+            physicalObject.durability -= state.maxDurability * HUNGER_HEALTH_EFFECT * Time.fixedDeltaTime;
         }
         // healing
-        if (fed > 0)
+        if (state.fed > 0)
         {
-            physicalObject.durability += maxDurability * HUNGER_HEALTH_EFFECT * Time.fixedDeltaTime;
+            physicalObject.durability += state.maxDurability * HUNGER_HEALTH_EFFECT * Time.fixedDeltaTime;
 
-            if (physicalObject.durability > maxDurability)
-                physicalObject.durability = maxDurability;
+            if (physicalObject.durability > state.maxDurability)
+                physicalObject.durability = state.maxDurability;
         }
 
-        wakeFullness += ((float)currentMentalState / DAY_DURATION) * Time.fixedDeltaTime;
-        /* move to brain code
-         * if (wakeFullness <= 0 && currentMentalState != mental_state.sleeping)
-        {
-            currentMentalState = mental_state.sleeping;
-        }
-        else if (wakeFullness >= 1 && currentMentalState != mental_state.sleeping ||  // Takes damage*/
+        state.wakeFullness += ((float)state.currentMentalState / DAY_DURATION) * Time.fixedDeltaTime;
+        if (state.wakeFullness < 0)
+            state.wakeFullness = 0;
+
 
         // AUDIO UPDATE
-        audioSource.volume = getPace();
-        audioSource.maxDistance = getPace() * MAX_SOUND_DISTANCE;
-        audioSource.pitch = 0.9f + getPace() * 0.5f;
+        audioSource.volume = state.getPace();
+        audioSource.maxDistance = state.getPace() * MAX_SOUND_DISTANCE;
+        audioSource.pitch = 0.9f + state.getPace() * 0.5f;
+
+        // AWARENESS UPDATE
+        
     }
 
     // Meta functions
@@ -167,7 +200,7 @@ public class Agent : MonoBehaviour {
     public bool LineOfSight(PhysicalObject target)
     {
         RaycastHit hit;
-        if (!Physics.Raycast(transform.position, transform.forward, out hit, perception * wakeFullness))
+        if (!Physics.Raycast(transform.position, transform.forward, out hit, state.perception * state.wakeFullness))
             return false;
 
         if (hit.transform.gameObject == target.gameObject)
@@ -176,8 +209,39 @@ public class Agent : MonoBehaviour {
         return false;
     }
 
-    private bool IsMovingFast()
+    public List<Food> FindAllPlantsNearby()
     {
-        return (currentPace == Pace.sprinting || currentPace == Pace.running);
+        float surroundRange = state.perception * state.wakeFullness * 0.5f;
+        Vector3 surroundingsBounds = new Vector3(surroundRange, surroundRange * 0.5f, surroundRange);
+        Collider[] surroundColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
+
+        //float visionRange = state.perception * state.wakeFullness;
+        //Vector3 visionVector = new Vector3(0, 0, visionRange);
+        Collider[] hitColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
+        List<Food> foodList = new List<Food>();
+        foreach(Collider collider in hitColliders)
+        {
+            foodList.Add(collider.gameObject.GetComponent<Food>());
+        }
+        return foodList; 
+    }
+
+    /// <summary>
+    /// Finds possible threats nearby
+    /// </summary>
+    public List<Agent> IsThreatNearby()
+    {
+        return null;
+    }
+
+    /// <summary>
+    /// This calculated the odds of agent winning against target in fight
+    /// </summary>
+    public float TargetThreat(Agent target)
+    {
+        float staminaModifier       = (target.state.maxStamina / state.stamina ) * 0.2f;
+        float durabilityModifier    = (target.physicalObject.durability / physicalObject.durability) * 0.4f;
+        float attackModifier        = (target.physicalObject.density / physicalObject.density) * 0.4f;
+        return staminaModifier + durabilityModifier + attackModifier;
     }
 }

@@ -12,10 +12,11 @@ public class WorldGenerator : MonoBehaviour {
     [SerializeField] private int biomeSize;
     [SerializeField] private int biomeOddsFavour;
     [SerializeField] private int spawnObjectsOdds;
+    [SerializeField] private int spawnAgentOdds;
 
     public GameObject[] groundTiles;
     public GameObject[] defaultSpawnList;
-    public GameObject[] animalsToSpawn;
+    public GameObject[] agentsToSpawn;
 
     public Random rand;
 
@@ -58,6 +59,10 @@ public class WorldGenerator : MonoBehaviour {
                             {
                                 SpawnObjectsOnTile(rand, groundTiles[biomeType], spawnPosition);
                             }
+                            else if (rand.Next(spawnAgentOdds) % spawnAgentOdds == 0)
+                            {
+                                SpawnAgentOnTile(rand, spawnPosition);
+                            }
                         }
                         else // This could also spawn the biome type ground tile, could make this different
                         {
@@ -67,6 +72,10 @@ public class WorldGenerator : MonoBehaviour {
                             if (rand.Next(spawnObjectsOdds) % spawnObjectsOdds == 0)
                             {
                                 SpawnObjectsOnTile(rand, groundTiles[objectToSpawn], spawnPosition);
+                            }
+                            else if (rand.Next(spawnAgentOdds) % spawnAgentOdds == 0)
+                            {
+                                SpawnAgentOnTile(rand, spawnPosition);
                             }
                         }
                     }
@@ -83,11 +92,40 @@ public class WorldGenerator : MonoBehaviour {
         Vector3 newSpawnPos = new Vector3(spawnPos.x + 0.5f, spawnPos.y + 0.15f, spawnPos.z + 0.5f);
         if (spawnListSize > 0)
         {
-            Instantiate<GameObject>(spawnList[rand.Next(spawnListSize)], newSpawnPos, Quaternion.identity);
+            Instantiate(spawnList[rand.Next(spawnListSize)], newSpawnPos, Quaternion.identity);
         }
         else
         {
-            Instantiate<GameObject>(defaultSpawnList[rand.Next(defaultSpawnList.Length)], newSpawnPos, Quaternion.identity);
+            Instantiate(defaultSpawnList[rand.Next(defaultSpawnList.Length)], newSpawnPos, Quaternion.identity);
+        }
+    }
+
+    private void SpawnAgentOnTile(Random rand, Vector3 spawnPos)
+    {
+        GameObject agentToSpawn = Instantiate(agentsToSpawn[rand.Next(agentsToSpawn.Length)], spawnPos, Quaternion.identity);
+        Agent agent = agentToSpawn.GetComponent<Agent>();
+        //agent.state.fed = 1.0f;
+        agent.state.metabolism    = rand.Next(1, 10) / 10;
+        //agent.state.wakeFullness  = 1.0f;
+        agent.state.maxMoveSpeed  = rand.Next(20, 100) / 10;
+        agent.state.maxStamina    = rand.Next(20, 100) / 10;
+        agent.state.stamina       = agent.state.maxStamina/2;
+        agent.state.perception    = rand.Next(50, 200) / 10;
+        int eaterType = rand.Next(2);
+        switch (eaterType)
+        {
+            case 0:
+                agent.state.eaterType = Eater_type.carnivore;
+                break;
+            case 1:
+                agent.state.eaterType = Eater_type.omnivore;
+                break;
+            case 2:
+                agent.state.eaterType = Eater_type.herbivore;
+                break;
+            default:
+                agent.state.eaterType = Eater_type.herbivore;
+                break;
         }
     }
 }

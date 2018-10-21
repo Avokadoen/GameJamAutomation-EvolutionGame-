@@ -104,13 +104,17 @@ public class WorldGenerator : MonoBehaviour {
     {
         GameObject agentToSpawn = Instantiate(agentsToSpawn[rand.Next(agentsToSpawn.Length)], spawnPos, Quaternion.identity);
         Agent agent = agentToSpawn.GetComponent<Agent>();
-        //agent.state.fed = 1.0f;
+        agent.state.fed = 1.0f;
         agent.state.metabolism    = (float)(rand.Next(1, 10) / 10.0f);
         agent.state.wakeFullness  = (float)(rand.Next(1, 10) / 10.0f);
         agent.state.maxMoveSpeed  = (float)(rand.Next(20, 100) / 10.0f);
         agent.state.maxStamina    = (float)(rand.Next(20, 100) / 10.0f);
         agent.state.stamina       = (float)(agent.state.maxStamina/2.0f);
         agent.state.perception    = (float)(rand.Next(50, 200) / 10.0f);
-        
+
+        agent.state.currentMentalState = Mental_state.awake;
+        agent.state.maxDurability = agent.GetComponent<PhysicalObject>().durability;
+        agent.state.currentPace = Pace.running;
+
     }
 }

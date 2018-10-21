@@ -41,10 +41,11 @@ public class Agent : MonoBehaviour {
     public const int DAY_DURATION = 10;    // how many seconds in one day
     public const int MAX_SOUND_DISTANCE = 100;
 
+    public Eater_type eaterType;
+
     public LayerMask plantsMask;
     public LayerMask meatMask;
     public LayerMask agentMask;
-
 
     public AgentState state;
     public Rigidbody rb;
@@ -53,11 +54,11 @@ public class Agent : MonoBehaviour {
     public PhysicalObject physicalObject;
     public PhysicalObject heldObject;
 
-    // TODO: move to function stack
-    public GameObject target;
+    private GameObject target;
     private int moveTowardsStatus;
-
     private float prevTargetDistance;
+
+    public
 
     // Use this for initialization
     void Start () {
@@ -65,22 +66,7 @@ public class Agent : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
 
-        // TODO: Agent testing values: remove
-        state.attackSpeed = 2f;
-        state.fed = 1f;
-        state.metabolism      = 0.4f;
-        state.wakeFullness    = 1f;
-        state.maxStamina      = 2f;
-        state.stamina         = 1f;
-        state.maxMoveSpeed    = 5f;
-        //tempreture      = 38f;
-        state.perception      = 10f;
-        state.currentMentalState = Mental_state.awake;
-        state.eaterType = Eater_type.herbivore;
-        state.maxDurability = physicalObject.durability;
-        state.actualDensity = physicalObject.density;
-        state.currentPace = Pace.running;
-        moveTowardsStatus = 404;
+        state.eaterType = eaterType;
     }
 
     // Update is called once per frame
@@ -230,7 +216,7 @@ public class Agent : MonoBehaviour {
                 physicalObject.durability = state.maxDurability;
         }
 
-        state.wakeFullness += ((float)state.currentMentalState / DAY_DURATION) * Time.fixedDeltaTime;
+        state.wakeFullness += ((float)state.currentMentalState / DAY_DURATION) * Time.fixedDeltaTime + 0.2f * Random.value * Time.fixedDeltaTime;
         if (state.wakeFullness < 0)
             state.wakeFullness = 0.09f;
 
@@ -294,7 +280,6 @@ public class Agent : MonoBehaviour {
         transform.LookAt(lookAt);
         RaycastHit hit;
 
-        Debug.DrawRay(transform.position, (target.transform.position - transform.position).normalized, Color.red);
         if (!Physics.Raycast(transform.position, (target.transform.position - transform.position).normalized, out hit, (state.perception * state.wakeFullness * 5)))
             return false;
 
@@ -322,7 +307,6 @@ public class Agent : MonoBehaviour {
         }
         if (preyList.Count > 0 &&easiestPrey == null)
         {
-            Debug.Log("Flee");
             return Player_state.danger;
         }
         else if (preyList.Count == 0 && easiestPrey == null)

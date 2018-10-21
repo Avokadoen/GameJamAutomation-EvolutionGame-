@@ -271,6 +271,15 @@ AnimatorStateTransition:
   - m_ConditionMode: 3
     m_ConditionEvent: wakeFullness
     m_EventTreshold: 0.1
+  - m_ConditionMode: 7
+    m_ConditionEvent: playerStatus
+    m_EventTreshold: 304
+  - m_ConditionMode: 7
+    m_ConditionEvent: playerStatus
+    m_EventTreshold: 280
+  - m_ConditionMode: 7
+    m_ConditionEvent: playerStatus
+    m_EventTreshold: 404
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102734078412050648}
   m_Solo: 0
@@ -451,15 +460,18 @@ AnimatorStateTransition:
   m_PrefabInternal: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: playerStatus
-    m_EventTreshold: 290
   - m_ConditionMode: 3
     m_ConditionEvent: wakeFullness
     m_EventTreshold: 0.1
   - m_ConditionMode: 4
     m_ConditionEvent: fed
     m_EventTreshold: 0.8
+  - m_ConditionMode: 7
+    m_ConditionEvent: playerStatus
+    m_EventTreshold: 280
+  - m_ConditionMode: 7
+    m_ConditionEvent: eaterType
+    m_EventTreshold: 2
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102234349946402796}
   m_Solo: 0
@@ -1205,7 +1217,7 @@ AnimatorStateMachine:
     m_Position: {x: 612, y: 72, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102150519950448554}
-    m_Position: {x: 312, y: 72, z: 0}
+    m_Position: {x: 336, y: 60, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102734078412050648}
     m_Position: {x: 1080, y: -120, z: 0}

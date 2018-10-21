@@ -339,6 +339,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b675e64a27b7797418c45cc5ae2daaa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  body: {fileID: 0}
   durability: 500
   density: 1
   onDestroy:

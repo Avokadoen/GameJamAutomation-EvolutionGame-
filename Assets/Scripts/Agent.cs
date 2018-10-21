@@ -5,10 +5,12 @@ using UnityEngine;
 public enum Pace         {stop = 0, walking = 1, jogging = 3, running = 5, sprinting = 10}
 public enum Mental_state {awake = -1, sleeping = 4}
 public enum Eater_type { carnivore, omnivore, herbivore }
+public enum Player_state { notDefined = 0, ok = 200, found = 202, attacking = 280, killedPrey = 290, danger = 304, notFound = 404, failedTask = 405 }
 
 public struct AgentState
 {
-
+    public float attackCooldown;
+    public float attackSpeed;
     public float fed;
     public float metabolism;
     public float wakeFullness;
@@ -17,6 +19,7 @@ public struct AgentState
     public float stamina;
     public float perception;
     public float maxDurability;
+    public float actualDensity;
     public Pace currentPace;
     public Mental_state currentMentalState;
     public Eater_type eaterType;
@@ -54,6 +57,8 @@ public class Agent : MonoBehaviour {
     public GameObject target;
     private int moveTowardsStatus;
 
+    private float prevTargetDistance;
+
     // Use this for initialization
     void Start () {
         physicalObject = GetComponent<PhysicalObject>();
@@ -61,6 +66,7 @@ public class Agent : MonoBehaviour {
         audioSource = GetComponent<AudioSource>();
 
         // TODO: Agent testing values: remove
+        state.attackSpeed = 2f;
         state.fed = 1f;
         state.metabolism      = 0.4f;
         state.wakeFullness    = 1f;
@@ -70,8 +76,9 @@ public class Agent : MonoBehaviour {
         //tempreture      = 38f;
         state.perception      = 10f;
         state.currentMentalState = Mental_state.awake;
-        state.eaterType = Eater_type.omnivore;
+        state.eaterType = Eater_type.herbivore;
         state.maxDurability = physicalObject.durability;
+        state.actualDensity = physicalObject.density;
         state.currentPace = Pace.running;
         moveTowardsStatus = 404;
     }
@@ -84,41 +91,45 @@ public class Agent : MonoBehaviour {
 
 
     // Actions
-    public int TryToPickUpTarget()
+    public Player_state TryToPickUpTarget()
     {
-        return TryToPickUp(target.GetComponent<PhysicalObject>());
+        if (target != null)
+        {
+            return TryToPickUp(target.GetComponent<PhysicalObject>());
+        }
+        return Player_state.failedTask;
     }
 
-    public int TryToPickUp(PhysicalObject target)
+    public Player_state TryToPickUp(PhysicalObject target)
     {
         RaycastHit hit;
         if (!Physics.Raycast(transform.position, (target.transform.position - transform.position).normalized, out hit, 2f * transform.localScale.x))
-            return 404;
+            return Player_state.notFound;
 
         if (hit.transform.gameObject.name != target.gameObject.name)
-            return 401;
+            return Player_state.failedTask;
 
         heldObject = target;
         heldObject.OnPickUp(physicalObject);
-        return 200;
+        return Player_state.ok;
     }
 
-    public int MoveTowardsTarget()
+    public Player_state MoveTowardsTarget()
     {
         return MoveTowards(target.transform.position);
     }
 
-    public int MoveTowards(Vector3 moveTowardsTarget)
+    public Player_state MoveTowards(Vector3 moveTowardsTarget)
     {
         Vector3 lookAt = moveTowardsTarget;
         lookAt.y = transform.position.y;
         transform.LookAt(lookAt);
         if (Physics.Raycast(transform.position, (target.transform.position - transform.position).normalized, 1f * transform.localScale.x))
-            return 202;
+            return Player_state.ok;
 
         else if (Mathf.Abs(moveTowardsTarget.x - transform.position.x) < ARRIVED_MOVE_TOW * transform.localScale.x &&
                 Mathf.Abs(moveTowardsTarget.z - transform.position.z) < ARRIVED_MOVE_TOW * transform.localScale.z)
-            return 200;
+            return Player_state.ok;
 
         float staminaToBeUsed = state.getPace() * Time.deltaTime;
         if (state.IsMovingFast() && state.stamina < staminaToBeUsed)
@@ -134,9 +145,31 @@ public class Agent : MonoBehaviour {
             state.stamina -= staminaToBeUsed;
         }
 
-        return 404;
+        return Player_state.notFound;
     }
 
+    public Player_state Attack()
+    {
+        if (target == null){
+            physicalObject.density = state.actualDensity;
+            return Player_state.killedPrey;
+        }
+
+        state.attackCooldown -= Time.deltaTime;
+        float distance = (target.transform.position - transform.position).magnitude;
+        if (state.attackCooldown <= 0)
+        {
+            physicalObject.density = state.actualDensity + 10f;
+            rb.velocity = (target.transform.position - transform.position).normalized * 5f;
+            state.attackCooldown = state.attackSpeed;
+        }
+        else if (distance > prevTargetDistance)
+        {
+            physicalObject.density = state.actualDensity;
+        }
+        prevTargetDistance = distance;
+        return Player_state.attacking;
+    }
     public void Sleep()
     {
         if (state.currentMentalState == Mental_state.awake)
@@ -199,14 +232,14 @@ public class Agent : MonoBehaviour {
 
         state.wakeFullness += ((float)state.currentMentalState / DAY_DURATION) * Time.fixedDeltaTime;
         if (state.wakeFullness < 0)
-            state.wakeFullness = 0;
+            state.wakeFullness = 0.09f;
 
 
         // AUDIO UPDATE
         audioSource.volume = state.getPace();
         audioSource.maxDistance = state.getPace() * MAX_SOUND_DISTANCE;
         audioSource.pitch = 0.9f + state.getPace() * 0.5f;
-        audioSource.loop = (rb.velocity.magnitude > 0);
+        audioSource.loop = (rb.velocity.magnitude > 0.05f);
 
         // AWARENESS UPDATE
 
@@ -246,7 +279,12 @@ public class Agent : MonoBehaviour {
 
     public bool LineOfSightToTarget()
     {
-        return LineOfSight(target.GetComponent<PhysicalObject>());
+        if (target != null)
+        {
+            return LineOfSight(target.GetComponent<PhysicalObject>());
+        }
+        return false;
+        
     }
 
     public bool LineOfSight(PhysicalObject target)
@@ -266,7 +304,8 @@ public class Agent : MonoBehaviour {
         return true;
     }
 
-    public float FindBestPreyNearby()
+
+    public Player_state FindBestPreyNearby()
     {
         float bestSoFar = 99999f;
         Agent easiestPrey = null;
@@ -274,16 +313,24 @@ public class Agent : MonoBehaviour {
         foreach (Agent prey in preyList)
         {
             float threat = TargetThreat(prey);
-            Debug.Log(threat);
-            if (threat < bestSoFar)
+ 
+            if (threat < bestSoFar && TargetThreat(prey) < prey.TargetThreat(this))
             {
                 bestSoFar = threat;
                 easiestPrey = prey;
             }
         }
-        if (easiestPrey == null) return bestSoFar;
+        if (preyList.Count > 0 &&easiestPrey == null)
+        {
+            Debug.Log("Flee");
+            return Player_state.danger;
+        }
+        else if (preyList.Count == 0 && easiestPrey == null)
+        {
+            return Player_state.notFound;
+        }
         target = easiestPrey.gameObject;
-        return bestSoFar;
+        return Player_state.attacking;
     }
 
     public List<Agent> FindAllPreyNearby()
@@ -295,16 +342,30 @@ public class Agent : MonoBehaviour {
         List<Agent> agentList = new List<Agent>();
         foreach (Collider collider in surroundColliders)
         {
-            agentList.Add(collider.gameObject.GetComponent<Agent>());
+            Agent agent = collider.gameObject.GetComponent<Agent>();
+            if(agent != null)
+                agentList.Add(agent);
+            
+            
         }
         return agentList;
     }
 
-    public int FindBestPlantNearby()
+    public Player_state FindBestMeatNearby()
+    {
+        return FindBestFoodNearby(meatMask);
+    }
+
+    public Player_state FindBestPlantNearby()
+    {
+        return FindBestFoodNearby(plantsMask);
+    }
+
+    private Player_state FindBestFoodNearby(LayerMask mask)
     {
         float bestSoFar = 999999;
         Food bestFood = null;
-        List<Food> foodNearby = FindAllPlantsNearby();
+        List<Food> foodNearby = FindAllFoodsNearby(mask);
         foreach(Food food in foodNearby)
         {
             float distanceMagnitude = Mathf.Abs((food.transform.position - transform.position).magnitude);
@@ -314,16 +375,16 @@ public class Agent : MonoBehaviour {
                 bestFood = food;
             }
         }
-        if (bestFood == null) return 404;
+        if (bestFood == null) return Player_state.notFound;
         target = bestFood.gameObject;
-        return 200;
+        return Player_state.found;
     }
 
-    public List<Food> FindAllPlantsNearby()
+    private List<Food> FindAllFoodsNearby(LayerMask mask)
     {
         float surroundRange = state.perception * state.wakeFullness * 2.5f * transform.localScale.x;
         Vector3 surroundingsBounds = new Vector3(surroundRange, surroundRange * 0.5f, surroundRange);
-        Collider[] surroundColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, plantsMask);
+        Collider[] surroundColliders = Physics.OverlapBox(transform.position, surroundingsBounds, Quaternion.identity, mask);
 
         List<Food> foodList = new List<Food>();
         foreach(Collider collider in surroundColliders)

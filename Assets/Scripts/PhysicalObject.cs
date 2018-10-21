@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class PhysicalObject : MonoBehaviour
 {
-    const float DAMAGE_TRESHOLD = 7.5f;
+    const float DAMAGE_TRESHOLD = 3f;
 
     public Rigidbody body;
     Collider objCollider;
@@ -28,7 +28,9 @@ public class PhysicalObject : MonoBehaviour
 
     public UnityEvent
         onDestroy,
-        onHolding;
+        onHolding,
+        onKilled;
+   
     public ColliderEvent
         onHit;
     public HandEvent
@@ -50,9 +52,13 @@ public class PhysicalObject : MonoBehaviour
             if (otherDensity <= 0) return;
             float potentialDamage = otherDensity * collision.relativeVelocity.magnitude;
             durability -= (potentialDamage > DAMAGE_TRESHOLD * density) ? potentialDamage : 0;
-            if (durability <= 0) Destroy(gameObject);
+            if (durability <= 0)
+            {
+                onKilled.Invoke();
+                Destroy(gameObject);
+            }
         }
-        //onHit.Invoke(collision.collider);
+        onHit.Invoke(collision.collider);
     }
 
     /// <summary>

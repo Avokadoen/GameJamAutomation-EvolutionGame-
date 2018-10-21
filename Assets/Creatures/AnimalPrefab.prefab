@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 82341817524827000}
   - component: {fileID: 95145044346636708}
   - component: {fileID: 114082044042712854}
+  - component: {fileID: 114103040806622864}
   m_Layer: 11
   m_Name: AnimalPrefab
   m_TagString: Untagged
@@ -42,7 +43,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1046132178205538}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.01, y: 1.18, z: 14}
+  m_LocalPosition: {x: -9.57, y: 1.458, z: 18.3}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_Children: []
   m_Father: {fileID: 0}
@@ -102,7 +103,7 @@ Rigidbody:
   m_AngularDrag: 0.05
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!82 &82341817524827000
@@ -118,7 +119,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 0
   m_Pitch: 0.9
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -232,6 +233,17 @@ MonoBehaviour:
   agent: {fileID: 114583169052035694}
   decisionInterval: 0
   completedDecision: 0
+--- !u!114 &114103040806622864
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1046132178205538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb53ae5150827094a81d060f885c0a30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114486372602238970
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -244,8 +256,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   body: {fileID: 0}
-  durability: 53.397614
-  density: 0.5
+  durability: 60
+  density: 0.2
   onDestroy:
     m_PersistentCalls:
       m_Calls: []
@@ -254,6 +266,23 @@ MonoBehaviour:
   onHolding:
     m_PersistentCalls:
       m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onKilled:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 114103040806622864}
+        m_MethodName: Drop
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1017086179655774, guid: 5b253c1c18d76e1489a2041dd4a147e6,
+            type: 2}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   onHit:

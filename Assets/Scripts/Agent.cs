@@ -38,7 +38,7 @@ public class Agent : MonoBehaviour {
     public const float FED_ATTRITION = 0.015f;
     public const float HUNGER_HEALTH_EFFECT = 0.001f;
     public const float ARRIVED_MOVE_TOW = 0.01f;
-    public const int DAY_DURATION = 10;    // how many seconds in one day
+    public const int DAY_DURATION = 20;    // how many seconds in one day
     public const int MAX_SOUND_DISTANCE = 100;
 
     public Eater_type eaterType;
@@ -67,6 +67,7 @@ public class Agent : MonoBehaviour {
         audioSource = GetComponent<AudioSource>();
 
         state.eaterType = eaterType;
+        moveTowardsStatus = 404;
     }
 
     // Update is called once per frame

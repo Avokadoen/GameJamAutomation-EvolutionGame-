@@ -105,27 +105,12 @@ public class WorldGenerator : MonoBehaviour {
         GameObject agentToSpawn = Instantiate(agentsToSpawn[rand.Next(agentsToSpawn.Length)], spawnPos, Quaternion.identity);
         Agent agent = agentToSpawn.GetComponent<Agent>();
         //agent.state.fed = 1.0f;
-        agent.state.metabolism    = rand.Next(1, 10) / 10;
-        //agent.state.wakeFullness  = 1.0f;
-        agent.state.maxMoveSpeed  = rand.Next(20, 100) / 10;
-        agent.state.maxStamina    = rand.Next(20, 100) / 10;
-        agent.state.stamina       = agent.state.maxStamina/2;
-        agent.state.perception    = rand.Next(50, 200) / 10;
-        int eaterType = rand.Next(2);
-        switch (eaterType)
-        {
-            case 0:
-                agent.state.eaterType = Eater_type.carnivore;
-                break;
-            case 1:
-                agent.state.eaterType = Eater_type.omnivore;
-                break;
-            case 2:
-                agent.state.eaterType = Eater_type.herbivore;
-                break;
-            default:
-                agent.state.eaterType = Eater_type.herbivore;
-                break;
-        }
+        agent.state.metabolism    = (float)(rand.Next(1, 10) / 10.0f);
+        agent.state.wakeFullness  = (float)(rand.Next(1, 10) / 10.0f);
+        agent.state.maxMoveSpeed  = (float)(rand.Next(20, 100) / 10.0f);
+        agent.state.maxStamina    = (float)(rand.Next(20, 100) / 10.0f);
+        agent.state.stamina       = (float)(agent.state.maxStamina/2.0f);
+        agent.state.perception    = (float)(rand.Next(50, 200) / 10.0f);
+        
     }
 }

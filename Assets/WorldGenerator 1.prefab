@@ -56,12 +56,14 @@ MonoBehaviour:
   biomeSize: 10
   biomeOddsFavour: 3
   spawnObjectsOdds: 4
-  spawnAgentOdds: 10
+  spawnAgentOdds: 50
   groundTiles:
   - {fileID: 1355176478806508, guid: 21d8f81641ac63b408a73968fc70d560, type: 2}
   - {fileID: 1665885571170610, guid: d5459b5853124454d8bba3bfae24b839, type: 2}
   - {fileID: 1769458794166740, guid: 83813be93f99dd341b0a6da125995bd2, type: 2}
   defaultSpawnList:
-  - {fileID: 1928335987547618, guid: a862a59af62d5464389a5d65581d99fa, type: 2}
+  - {fileID: 1017086179655774, guid: f5de61cd1ac23ac419554763bdb1b0df, type: 2}
   agentsToSpawn:
-  - {fileID: 1046132178205538, guid: dbc84cbb4c94d904b9d4fb169597b9f5, type: 2}
+  - {fileID: 1064834199836256, guid: 24946dc513793974398848f9733a042b, type: 2}
+  - {fileID: 1671856762032282, guid: 128782c376367844aa2de4ddeb922b0b, type: 2}
+  - {fileID: 1752301971607262, guid: 0c7aa0c52adb43248923c79aa84621c0, type: 2}

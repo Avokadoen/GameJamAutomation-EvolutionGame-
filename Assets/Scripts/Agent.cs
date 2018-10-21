@@ -68,6 +68,7 @@ public class Agent : MonoBehaviour {
 
         state.eaterType = eaterType;
         moveTowardsStatus = 404;
+        prevTargetDistance = 9999f;
     }
 
     // Update is called once per frame
@@ -150,7 +151,7 @@ public class Agent : MonoBehaviour {
             rb.velocity = (target.transform.position - transform.position).normalized * 5f;
             state.attackCooldown = state.attackSpeed;
         }
-        else if (distance > prevTargetDistance)
+        else if (distance >= prevTargetDistance)
         {
             physicalObject.density = state.actualDensity;
         }
@@ -182,6 +183,11 @@ public class Agent : MonoBehaviour {
     private void UpdateStates()
     {
         rb.angularVelocity = new Vector3(0, 0, 0);
+
+        if(state.stamina >= state.maxStamina)
+        {
+            state.currentPace = Pace.sprinting;
+        }
 
         // FED UPDATE
         if (state.fed > 0)
@@ -217,7 +223,7 @@ public class Agent : MonoBehaviour {
                 physicalObject.durability = state.maxDurability;
         }
 
-        state.wakeFullness += ((float)state.currentMentalState / DAY_DURATION) * Time.fixedDeltaTime + 0.2f * Random.value * Time.fixedDeltaTime;
+        state.wakeFullness += ((float)state.currentMentalState / DAY_DURATION) * Time.fixedDeltaTime;
         if (state.wakeFullness < 0)
             state.wakeFullness = 0.09f;
 
